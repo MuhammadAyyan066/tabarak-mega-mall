@@ -9,9 +9,10 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Auth Guard: Login Check -->
+    <!-- Auth Guard: Real JWT Token Check -->
     <script>
-        if (sessionStorage.getItem('tabarak_admin_logged_in') !== 'true') {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
             window.location.href = "login.html";
         }
     </script>
@@ -30,6 +31,10 @@
             </div>
             
             <div class="flex items-center gap-3">
+                <!-- My Profile Button -->
+                <button onclick="openProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-user-gear text-emerald-400"></i> My Profile
+                </button>
                 <a href="index.html" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2">
                     <i class="fa-solid fa-store"></i> View Live Store
                 </a>
@@ -67,11 +72,11 @@
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
                 <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-shield-halved"></i>
+                    <i class="fa-solid fa-cloud-check text-emerald-600"></i>
                 </div>
                 <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase">System Status</span>
-                    <h3 class="text-lg font-black text-emerald-600">Online / Sync Active</h3>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Database Link</span>
+                    <h3 class="text-lg font-black text-emerald-600">MongoDB Atlas Live</h3>
                 </div>
             </div>
         </div>
@@ -102,7 +107,7 @@
                         </tr>
                     </thead>
                     <tbody id="adminTableBody" class="divide-y divide-slate-100 text-sm font-medium">
-                        <!-- Rendered dynamically -->
+                        <!-- Loaded dynamically from Mongo DB -->
                     </tbody>
                 </table>
             </div>
@@ -164,7 +169,7 @@
                     <input type="file" id="prodFile" accept="image/*" onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border border-slate-300 rounded-xl cursor-pointer">
                 </div>
 
-                <!-- Web URL Input Section (Hidden by default) -->
+                <!-- Web URL Input Section -->
                 <div id="urlUploadContainer" class="hidden">
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Image URL</label>
                     <input type="url" id="prodImg" placeholder="https://..." class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -178,36 +183,79 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t">
                     <button type="button" onclick="closeProductModal()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md">Save Product</button>
+                    <button type="submit" id="saveBtn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-black text-lg text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-emerald-600"></i> Admin Profile Settings
+                </h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form onsubmit="saveProfileDetails(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name</label>
+                    <input type="text" id="profFullName" required placeholder="Muhammad Ayyan" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username</label>
+                    <input type="text" id="profUsername" required placeholder="admin" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address (For OTP Recovery)</label>
+                    <input type="email" id="profEmail" required placeholder="admin@tabarak.com" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+                    <input type="text" id="profPhone" placeholder="03001234567" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeProfileModal()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" id="profSaveBtn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md">Update Profile</button>
                 </div>
             </form>
         </div>
     </div>
 
     <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-        © Tabarak Mega Mall Admin Panel | Control Center
+        © Tabarak Mega Mall Admin Panel | Cloud Connected
     </footer>
 
-    <!-- JavaScript CRUD Engine -->
+    <!-- Express REST API CRUD Script -->
     <script>
+        const API_BASE = 'http://localhost:5000/api/products';
+        const AUTH_BASE = 'http://localhost:5000/api/auth';
+        let adminProducts = [];
+        let currentUploadedImageBase64 = "";
+
         function handleLogout() {
-            sessionStorage.removeItem('tabarak_admin_logged_in');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
             window.location.href = "login.html";
         }
 
-        let defaultProducts = [
-            { id: 1, name: "Premium Cooking Oil (5L)", category: "grocery", price: 2450, oldPrice: 2600, img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500" },
-            { id: 2, name: "Super Basmati Rice (5 Kg)", category: "grocery", price: 1850, oldPrice: 2000, img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500" },
-            { id: 3, name: "Non-Stick Cookware Set (8 Pcs)", category: "kitchen", price: 6800, oldPrice: 7500, img: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?w=500" },
-            { id: 4, name: "Chicken Nuggets Pack (1 Kg)", category: "frozen", price: 1150, oldPrice: 1300, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=500" }
-        ];
-
-        let adminProducts = JSON.parse(localStorage.getItem('tabarak_products')) || defaultProducts;
-        let currentUploadedImageBase64 = "";
-
-        function saveToStorage() {
-            localStorage.setItem('tabarak_products', JSON.stringify(adminProducts));
-            renderAdminTable(adminProducts);
+        // Fetch Products
+        async function fetchProducts() {
+            try {
+                const res = await fetch(API_BASE);
+                const data = await res.json();
+                adminProducts = data;
+                renderAdminTable(adminProducts);
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("❌ Cannot load products from Backend Server!");
+            }
         }
 
         function renderAdminTable(items) {
@@ -215,27 +263,77 @@
             document.getElementById('statTotalProducts').innerText = items.length;
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">No products found in inventory.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">No products found in Atlas DB inventory.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = items.map(p => `
                 <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
                     <td class="py-3 px-6 flex items-center gap-3">
-                        <img src="${p.img}" alt="${p.name}" class="w-10 h-10 rounded-lg object-cover bg-slate-100" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=150';">
+                        <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded-lg object-cover bg-slate-100" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=150';">
                         <span class="font-bold text-slate-800">${p.name}</span>
                     </td>
                     <td class="py-3 px-6">
                         <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">${p.category}</span>
                     </td>
-                    <td class="py-3 px-6 font-bold text-emerald-800">Rs. ${p.price.toLocaleString()}</td>
+                    <td class="py-3 px-6 font-bold text-emerald-800">Rs. ${p.price ? p.price.toLocaleString() : 0}</td>
                     <td class="py-3 px-6 text-slate-400 line-through">${p.oldPrice ? 'Rs. ' + p.oldPrice.toLocaleString() : '-'}</td>
                     <td class="py-3 px-6 text-right space-x-2">
-                        <button onclick="editProduct(${p.id})" class="p-2 text-slate-600 hover:text-emerald-600 transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteProduct(${p.id})" class="p-2 text-slate-600 hover:text-rose-600 transition"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="editProduct('${p._id}')" class="p-2 text-slate-600 hover:text-emerald-600 transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteProduct('${p._id}')" class="p-2 text-slate-600 hover:text-rose-600 transition"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        // Profile Modal Logic
+        function openProfileModal() {
+            const user = JSON.parse(localStorage.getItem('adminUser')) || {};
+            document.getElementById('profFullName').value = user.fullName || "Muhammad Ayyan";
+            document.getElementById('profUsername').value = user.username || "admin";
+            document.getElementById('profEmail').value = user.email || "admin@tabarak.com";
+            document.getElementById('profPhone').value = user.phone || "03001234567";
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        async function saveProfileDetails(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('adminToken');
+            const fullName = document.getElementById('profFullName').value.trim();
+            const username = document.getElementById('profUsername').value.trim();
+            const email = document.getElementById('profEmail').value.trim();
+            const phone = document.getElementById('profPhone').value.trim();
+
+            const btn = document.getElementById('profSaveBtn');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${AUTH_BASE}/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ fullName, username, email, phone })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('adminUser', JSON.stringify(data.user));
+                    alert("✅ Profile updated successfully in MongoDB!");
+                    closeProfileModal();
+                } else {
+                    alert("❌ " + data.message);
+                }
+            } catch (err) {
+                alert("❌ Server connection error!");
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         function toggleImageInputType() {
@@ -275,8 +373,9 @@
             document.getElementById('productModal').classList.add('hidden');
         }
 
-        function saveProduct(e) {
+        async function saveProduct(e) {
             e.preventDefault();
+            const token = localStorage.getItem('adminToken');
             const id = document.getElementById('editProductId').value;
             const name = document.getElementById('prodName').value;
             const category = document.getElementById('prodCategory').value;
@@ -294,51 +393,91 @@
                 finalImage = document.getElementById('prodImg').value || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500";
             }
 
-            if (id) {
-                // Update Product
-                const index = adminProducts.findIndex(p => p.id == id);
-                if (index !== -1) {
-                    adminProducts[index] = { id: parseInt(id), name, category, price, oldPrice, img: finalImage };
-                }
-            } else {
-                // Add New Product
-                const newId = Date.now();
-                adminProducts.push({ id: newId, name, category, price, oldPrice, img: finalImage });
-            }
+            const payload = { name, category, price, oldPrice, image: finalImage };
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
 
-            saveToStorage();
-            closeProductModal();
+            try {
+                let res;
+                if (id) {
+                    res = await fetch(`${API_BASE}/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(API_BASE, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (res.ok) {
+                    closeProductModal();
+                    fetchProducts();
+                } else {
+                    const errData = await res.json();
+                    alert("❌ Error: " + errData.message);
+                }
+            } catch (err) {
+                console.error("Save Error:", err);
+                alert("❌ Failed to save product to Server.");
+            } finally {
+                saveBtn.disabled = false;
+            }
         }
 
         function editProduct(id) {
-            const product = adminProducts.find(p => p.id == id);
+            const product = adminProducts.find(p => p._id === id);
             if (!product) return;
 
             document.getElementById('modalTitle').innerText = "Edit Product";
-            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductId').value = product._id;
             document.getElementById('prodName').value = product.name;
             document.getElementById('prodCategory').value = product.category;
             document.getElementById('prodPrice').value = product.price;
             document.getElementById('prodOldPrice').value = product.oldPrice ? product.oldPrice : "";
             
-            currentUploadedImageBase64 = product.img;
-            document.getElementById('imagePreview').src = product.img;
+            currentUploadedImageBase64 = product.image;
+            document.getElementById('imagePreview').src = product.image;
 
-            if (product.img && product.img.startsWith('data:image')) {
+            if (product.image && product.image.startsWith('data:image')) {
                 document.getElementById('imageSourceType').value = 'file';
             } else {
                 document.getElementById('imageSourceType').value = 'url';
-                document.getElementById('prodImg').value = product.img;
+                document.getElementById('prodImg').value = product.image;
             }
 
             toggleImageInputType();
             document.getElementById('productModal').classList.remove('hidden');
         }
 
-        function deleteProduct(id) {
-            if (confirm("Are you sure you want to delete this product?")) {
-                adminProducts = adminProducts.filter(p => p.id != id);
-                saveToStorage();
+        async function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this product from MongoDB?")) {
+                const token = localStorage.getItem('adminToken');
+                try {
+                    const res = await fetch(`${API_BASE}/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (res.ok) {
+                        fetchProducts();
+                    } else {
+                        alert("❌ Deletion Failed!");
+                    }
+                } catch (err) {
+                    console.error("Delete Error:", err);
+                }
             }
         }
 
@@ -348,7 +487,8 @@
             renderAdminTable(filtered);
         }
 
-        renderAdminTable(adminProducts);
+        // Initialize Fetching
+        fetchProducts();
     </script>
 </body>
 </html>

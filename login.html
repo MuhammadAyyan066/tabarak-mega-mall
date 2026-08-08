@@ -25,7 +25,6 @@
 
         <!-- Main Login Form -->
         <form onsubmit="handleLogin(event)" class="space-y-4">
-            <!-- Username Input -->
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / Email</label>
                 <div class="relative">
@@ -34,43 +33,22 @@
                 </div>
             </div>
 
-            <!-- Password Input -->
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
                 <div class="relative">
                     <input type="password" id="password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
                     <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
                 </div>
-                <!-- Forgot Password Below Password Field -->
                 <div class="text-right mt-1.5">
                     <button type="button" onclick="openForgetModal()" class="text-xs font-bold text-emerald-600 hover:underline">Forgot Password?</button>
                 </div>
             </div>
 
-            <!-- Main Submit Button -->
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 text-sm">
+            <button type="submit" id="loginBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 text-sm">
                 <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
             </button>
         </form>
 
-        <!-- Divider -->
-        <div class="relative flex py-2 items-center my-5">
-            <div class="flex-grow border-t border-slate-200"></div>
-            <span class="flex-shrink mx-4 text-[10px] text-slate-400 font-black uppercase tracking-widest">Or Continue With</span>
-            <div class="flex-grow border-t border-slate-200"></div>
-        </div>
-
-        <!-- Social / Apple Login Buttons (Placed Below) -->
-        <div class="space-y-2.5">
-            <button onclick="handleSocialLogin('Apple')" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-3">
-                <i class="fa-brands fa-apple text-base"></i> Login with Apple ID
-            </button>
-            <button onclick="handleSocialLogin('Google')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-3">
-                <i class="fa-brands fa-google text-rose-500 text-sm"></i> Login with Google
-            </button>
-        </div>
-
-        <!-- Back to Store -->
         <div class="mt-6 border-t pt-4 text-center">
             <a href="index.html" class="text-xs font-bold text-slate-400 hover:text-emerald-600 transition inline-flex items-center gap-1">
                 <i class="fa-solid fa-arrow-left"></i> Back to Main Store
@@ -78,38 +56,49 @@
         </div>
     </div>
 
-    <!-- Forget Password Modal -->
+    <!-- 2-Step OTP Reset Password Modal -->
     <div id="forgetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="font-black text-slate-900 text-base">Reset Password</h3>
+                <h3 class="font-black text-slate-900 text-base">OTP Password Reset</h3>
                 <button onclick="closeForgetModal()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
             </div>
-            
-            <p class="text-xs text-slate-500 mb-4">Enter registered email/username to reset your admin password.</p>
-            
-            <form onsubmit="handleResetPassword(event)" class="space-y-4">
+
+            <!-- STEP 1: Enter Email to Receive OTP -->
+            <form id="otpStep1Form" onsubmit="handleSendOtp(event)" class="space-y-4">
+                <p class="text-xs text-slate-500">Enter your registered admin email address to receive a 6-digit OTP code.</p>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email / Username</label>
-                    <input type="text" id="resetInput" required placeholder="admin" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address</label>
+                    <input type="email" id="resetEmail" required placeholder="admin@tabarak.com" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <button type="submit" id="sendOtpBtn" class="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Send OTP Verification Code
+                </button>
+            </form>
+
+            <!-- STEP 2: Verify OTP & Reset Password (Hidden by default) -->
+            <form id="otpStep2Form" onsubmit="handleVerifyReset(event)" class="space-y-4 hidden">
+                <p class="text-xs text-emerald-600 font-bold">✅ OTP Code has been sent to your email! Enter it below:</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">6-Digit OTP Code</label>
+                    <input type="text" id="otpCode" maxlength="6" required placeholder="123456" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">New Password</label>
-                    <input type="password" id="newPassInput" required placeholder="••••••••" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="password" id="newPass" required placeholder="••••••••" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-                
-                <button type="submit" class="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    Update Password
+                <button type="submit" id="verifyBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Verify OTP & Reset Password
                 </button>
             </form>
         </div>
     </div>
 
+    <!-- Live API Logic Script -->
     <script>
-        let currentAdminUser = localStorage.getItem('tabarak_admin_user') || "admin";
-        let currentAdminPass = localStorage.getItem('tabarak_admin_pass') || "tabarak123";
+        const API_URL = "http://localhost:5000/api/auth";
 
-        if (sessionStorage.getItem('tabarak_admin_logged_in') === 'true') {
+        if (localStorage.getItem('adminToken')) {
             window.location.href = "admin.html";
         }
 
@@ -127,46 +116,106 @@
             alertBox.classList.remove('hidden');
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loginBtn = document.getElementById('loginBtn');
 
-            if ((user === currentAdminUser || user === "admin@tabarak.com") && pass === currentAdminPass) {
-                sessionStorage.setItem('tabarak_admin_logged_in', 'true');
-                window.location.href = "admin.html";
-            } else {
-                showAlert("Invalid Username or Password!");
+            loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminUser', JSON.stringify(data.user));
+                    
+                    showAlert("✅ Login Successful! Redirecting...", true);
+                    setTimeout(() => { window.location.href = "admin.html"; }, 800);
+                } else {
+                    showAlert(data.message || "Invalid Username or Password!");
+                }
+            } catch (err) {
+                showAlert("❌ Unable to connect to server! Make sure node app.js is running.");
+            } finally {
+                loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard';
+                loginBtn.disabled = false;
             }
         }
 
-        function handleSocialLogin(provider) {
-            sessionStorage.setItem('tabarak_admin_logged_in', 'true');
-            alert(`Authenticated via ${provider} ID successfully! Redirecting...`);
-            window.location.href = "admin.html";
+        // Send OTP
+        async function handleSendOtp(e) {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            const btn = document.getElementById('sendOtpBtn');
+
+            btn.innerText = "Sending OTP Email...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('otpStep1Form').classList.add('hidden');
+                    document.getElementById('otpStep2Form').classList.remove('hidden');
+                } else {
+                    showAlert("❌ " + data.message);
+                }
+            } catch (err) {
+                alert("❌ Server Connection Error!");
+            } finally {
+                btn.innerText = "Send OTP Verification Code";
+                btn.disabled = false;
+            }
+        }
+
+        // Verify OTP & Reset Password
+        async function handleVerifyReset(e) {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            const otp = document.getElementById('otpCode').value.trim();
+            const newPassword = document.getElementById('newPass').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/verify-reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp, newPassword })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("✅ Password Reset Successful! Login with your new password.");
+                    closeForgetModal();
+                } else {
+                    alert("❌ " + data.message);
+                }
+            } catch (err) {
+                alert("❌ Failed to reset password.");
+            }
         }
 
         function openForgetModal() {
             document.getElementById('forgetModal').classList.remove('hidden');
+            document.getElementById('otpStep1Form').classList.remove('hidden');
+            document.getElementById('otpStep2Form').classList.add('hidden');
         }
 
         function closeForgetModal() {
             document.getElementById('forgetModal').classList.add('hidden');
-        }
-
-        function handleResetPassword(e) {
-            e.preventDefault();
-            const userInput = document.getElementById('resetInput').value.trim();
-            const newPass = document.getElementById('newPassInput').value.trim();
-
-            if (userInput === currentAdminUser || userInput === "admin@tabarak.com") {
-                currentAdminPass = newPass;
-                localStorage.setItem('tabarak_admin_pass', newPass);
-                closeForgetModal();
-                showAlert("Password reset successfully! Login with your new password.", true);
-            } else {
-                alert("Account not found!");
-            }
         }
     </script>
 </body>
