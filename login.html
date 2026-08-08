@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Tabarak Mega Mall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 border border-slate-100 relative">
+        <!-- Logo & Branding -->
+        <div class="text-center mb-6">
+            <img src="logo mall.jpg" alt="Tabarak Logo" class="h-14 w-auto mx-auto object-contain mb-3" onerror="this.onerror=null; this.style.display='none';">
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Management Portal</h2>
+            <p class="text-xs text-slate-500 font-semibold mt-1">Tabarak Mega Mall Karianwala</p>
+        </div>
+
+        <!-- Alert Message -->
+        <div id="alertBox" class="hidden mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2">
+            <i id="alertIcon" class="fa-solid text-base"></i>
+            <span id="alertMessage"></span>
+        </div>
+
+        <!-- Main Login Form -->
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+            <!-- Username Input -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / Email</label>
+                <div class="relative">
+                    <input type="text" id="username" required placeholder="admin or admin@tabarak.com" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
+                <div class="relative">
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+                <!-- Forgot Password Below Password Field -->
+                <div class="text-right mt-1.5">
+                    <button type="button" onclick="openForgetModal()" class="text-xs font-bold text-emerald-600 hover:underline">Forgot Password?</button>
+                </div>
+            </div>
+
+            <!-- Main Submit Button -->
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative flex py-2 items-center my-5">
+            <div class="flex-grow border-t border-slate-200"></div>
+            <span class="flex-shrink mx-4 text-[10px] text-slate-400 font-black uppercase tracking-widest">Or Continue With</span>
+            <div class="flex-grow border-t border-slate-200"></div>
+        </div>
+
+        <!-- Social / Apple Login Buttons (Placed Below) -->
+        <div class="space-y-2.5">
+            <button onclick="handleSocialLogin('Apple')" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-3">
+                <i class="fa-brands fa-apple text-base"></i> Login with Apple ID
+            </button>
+            <button onclick="handleSocialLogin('Google')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-3">
+                <i class="fa-brands fa-google text-rose-500 text-sm"></i> Login with Google
+            </button>
+        </div>
+
+        <!-- Back to Store -->
+        <div class="mt-6 border-t pt-4 text-center">
+            <a href="index.html" class="text-xs font-bold text-slate-400 hover:text-emerald-600 transition inline-flex items-center gap-1">
+                <i class="fa-solid fa-arrow-left"></i> Back to Main Store
+            </a>
+        </div>
+    </div>
+
+    <!-- Forget Password Modal -->
+    <div id="forgetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-black text-slate-900 text-base">Reset Password</h3>
+                <button onclick="closeForgetModal()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            
+            <p class="text-xs text-slate-500 mb-4">Enter registered email/username to reset your admin password.</p>
+            
+            <form onsubmit="handleResetPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email / Username</label>
+                    <input type="text" id="resetInput" required placeholder="admin" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">New Password</label>
+                    <input type="password" id="newPassInput" required placeholder="••••••••" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                
+                <button type="submit" class="w-full bg-slate-900 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentAdminUser = localStorage.getItem('tabarak_admin_user') || "admin";
+        let currentAdminPass = localStorage.getItem('tabarak_admin_pass') || "tabarak123";
+
+        if (sessionStorage.getItem('tabarak_admin_logged_in') === 'true') {
+            window.location.href = "admin.html";
+        }
+
+        function showAlert(msg, isSuccess = false) {
+            const alertBox = document.getElementById('alertBox');
+            const alertMsg = document.getElementById('alertMessage');
+            const alertIcon = document.getElementById('alertIcon');
+
+            alertMsg.innerText = msg;
+            alertBox.className = isSuccess 
+                ? "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700"
+                : "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700";
+            
+            alertIcon.className = isSuccess ? "fa-solid fa-circle-check text-base" : "fa-solid fa-circle-exclamation text-base";
+            alertBox.classList.remove('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if ((user === currentAdminUser || user === "admin@tabarak.com") && pass === currentAdminPass) {
+                sessionStorage.setItem('tabarak_admin_logged_in', 'true');
+                window.location.href = "admin.html";
+            } else {
+                showAlert("Invalid Username or Password!");
+            }
+        }
+
+        function handleSocialLogin(provider) {
+            sessionStorage.setItem('tabarak_admin_logged_in', 'true');
+            alert(`Authenticated via ${provider} ID successfully! Redirecting...`);
+            window.location.href = "admin.html";
+        }
+
+        function openForgetModal() {
+            document.getElementById('forgetModal').classList.remove('hidden');
+        }
+
+        function closeForgetModal() {
+            document.getElementById('forgetModal').classList.add('hidden');
+        }
+
+        function handleResetPassword(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('resetInput').value.trim();
+            const newPass = document.getElementById('newPassInput').value.trim();
+
+            if (userInput === currentAdminUser || userInput === "admin@tabarak.com") {
+                currentAdminPass = newPass;
+                localStorage.setItem('tabarak_admin_pass', newPass);
+                closeForgetModal();
+                showAlert("Password reset successfully! Login with your new password.", true);
+            } else {
+                alert("Account not found!");
+            }
+        }
+    </script>
+</body>
+</html>
