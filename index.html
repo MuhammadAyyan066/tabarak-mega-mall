@@ -119,27 +119,72 @@
         </div>
     </section>
 
-    <!-- Cart Modal -->
+    <!-- Cart Modal / Drawer -->
     <div id="cartModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-end">
         <div class="bg-white w-full max-w-md h-full p-6 flex flex-col justify-between shadow-2xl">
             <div>
                 <div class="flex items-center justify-between border-b pb-4 mb-4">
-                    <h3 class="font-black text-slate-900 text-lg">Your Order Basket</h3>
+                    <h3 class="font-black text-slate-900 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-emerald-600"></i> Your Order Basket
+                    </h3>
                     <button onclick="toggleCartModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">&times;</button>
                 </div>
-                <div id="cartItemsList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 text-sm">
+                <div id="cartItemsList" class="space-y-3 max-h-[55vh] overflow-y-auto pr-2 text-sm">
                     <p class="text-slate-400 text-center py-8">Your cart is currently empty.</p>
                 </div>
             </div>
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-center font-black text-slate-900 text-base mb-4">
+            
+            <div class="border-t pt-4 space-y-3">
+                <div class="flex justify-between items-center font-black text-slate-900 text-base">
                     <span>Total Amount:</span>
-                    <span id="cartTotal">Rs. 0</span>
+                    <span id="cartTotal" class="text-emerald-700">Rs. 0</span>
                 </div>
-                <button onclick="checkoutWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+
+                <!-- Online Checkout Button -->
+                <button onclick="openCheckoutModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md">
+                    <i class="fa-solid fa-truck-fast text-emerald-400"></i> Place Delivery Order (Online)
+                </button>
+
+                <!-- WhatsApp Checkout Button -->
+                <button onclick="checkoutWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-xs">
                     <i class="fa-brands fa-whatsapp text-lg"></i> Checkout via WhatsApp
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Customer Checkout Form Modal -->
+    <div id="checkoutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-black text-lg text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-emerald-600"></i> Customer Delivery Details
+                </h3>
+                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form onsubmit="submitOnlineOrder(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name</label>
+                    <input type="text" id="custName" required placeholder="e.g. Muhammad Ali" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone / WhatsApp Number</label>
+                    <input type="text" id="custPhone" required placeholder="03141234567" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Complete Address</label>
+                    <textarea id="custAddress" required rows="2" placeholder="House/Street, Mohallah" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">City / Town</label>
+                    <input type="text" id="custCity" required value="Karianwala" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <button type="submit" id="submitOrderBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-md text-xs mt-2 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Confirm & Submit Order
+                </button>
+            </form>
         </div>
     </div>
 
@@ -180,47 +225,68 @@
         </div>
     </footer>
 
-    <!-- JavaScript Data Sync & Logic -->
+    <!-- JavaScript REST API Sync & Logic -->
     <script>
+        const API_PRODUCTS = 'http://localhost:5000/api/products';
+        const API_ORDERS = 'http://localhost:5000/api/orders';
+
         const defaultProducts = [
-            { id: 1, name: "Premium Cooking Oil (5L)", category: "grocery", price: 2450, oldPrice: 2600, img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500" },
-            { id: 2, name: "Super Basmati Rice (5 Kg)", category: "grocery", price: 1850, oldPrice: 2000, img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500" },
-            { id: 3, name: "Fine Wheat Flour Atta (10 Kg)", category: "grocery", price: 1350, oldPrice: 1450, img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" }
+            { _id: '1', name: "Premium Cooking Oil (5L)", category: "grocery", price: 2450, oldPrice: 2600, image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500" },
+            { _id: '2', name: "Super Basmati Rice (5 Kg)", category: "grocery", price: 1850, oldPrice: 2000, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500" },
+            { _id: '3', name: "Fine Wheat Flour Atta (10 Kg)", category: "grocery", price: 1350, oldPrice: 1450, image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" }
         ];
 
-        let storedProducts = JSON.parse(localStorage.getItem('tabarak_products'));
-        let products = storedProducts && storedProducts.length > 0 ? storedProducts : defaultProducts;
-
+        let products = [];
         let cart = [];
+
+        // Load Products from Express API (Fallback to default if server offline)
+        async function loadProducts() {
+            try {
+                const res = await fetch(API_PRODUCTS);
+                if(res.ok) {
+                    const data = await res.json();
+                    products = data.length > 0 ? data : defaultProducts;
+                } else {
+                    products = defaultProducts;
+                }
+            } catch (err) {
+                console.log("Using default fallback products:", err);
+                products = defaultProducts;
+            }
+            renderProducts(products);
+        }
 
         function renderProducts(items) {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = items.map(p => `
-                <div class="product-card bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200 transition flex flex-col justify-between">
-                    <div>
-                        <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-md uppercase">${p.category}</span>
-                        <div class="overflow-hidden rounded-xl h-44 my-3 bg-slate-100">
-                            <img src="${p.img}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';">
+            grid.innerHTML = items.map(p => {
+                const imgSrc = p.image || p.img || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
+                return `
+                    <div class="product-card bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200 transition flex flex-col justify-between">
+                        <div>
+                            <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-md uppercase">${p.category}</span>
+                            <div class="overflow-hidden rounded-xl h-44 my-3 bg-slate-100">
+                                <img src="${imgSrc}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';">
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-sm line-clamp-1">${p.name}</h3>
+                            <p class="text-xs text-slate-500 mb-3">Guaranteed Fresh & Genuine</p>
                         </div>
-                        <h3 class="font-bold text-slate-800 text-sm line-clamp-1">${p.name}</h3>
-                        <p class="text-xs text-slate-500 mb-3">Guaranteed Fresh & Genuine</p>
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-base font-black text-emerald-800">Rs. ${p.price ? p.price.toLocaleString() : 0}</span>
+                                ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">Rs. ${p.oldPrice.toLocaleString()}</span>` : ''}
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-xl transition">
+                                    + Add Cart
+                                </button>
+                                <a href="https://wa.me/923143492111?text=${encodeURIComponent('I want to order: ' + p.name)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl transition text-center flex items-center justify-center gap-1">
+                                    <i class="fa-brands fa-whatsapp"></i> Quick
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-base font-black text-emerald-800">Rs. ${p.price.toLocaleString()}</span>
-                            ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">Rs. ${p.oldPrice.toLocaleString()}</span>` : ''}
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-xl transition">
-                                + Add Cart
-                            </button>
-                            <a href="https://wa.me/923143492111?text=${encodeURIComponent('I want to order: ' + p.name)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl transition text-center flex items-center justify-center gap-1">
-                                <i class="fa-brands fa-whatsapp"></i> Quick
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             document.getElementById('totalProductsCount').innerText = items.length;
         }
@@ -232,6 +298,11 @@
             } else {
                 cart.push({ name, price, qty: 1 });
             }
+            updateCartUI();
+        }
+
+        function removeFromCart(name) {
+            cart = cart.filter(item => item.name !== name);
             updateCartUI();
         }
 
@@ -255,7 +326,10 @@
                                 <h4 class="font-bold text-slate-800">${item.name}</h4>
                                 <span class="text-xs text-slate-500">Rs. ${item.price} x ${item.qty}</span>
                             </div>
-                            <span class="font-black text-emerald-800">Rs. ${item.price * item.qty}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="font-black text-emerald-800">Rs. ${item.price * item.qty}</span>
+                                <button onclick="removeFromCart('${item.name.replace(/'/g, "\\'")}')" class="text-rose-500 hover:text-rose-700 font-bold">&times;</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -267,6 +341,61 @@
 
         function toggleCartModal() {
             document.getElementById('cartModal').classList.toggle('hidden');
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) return alert('Cart is empty!');
+            toggleCartModal();
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        // Online Delivery Checkout (Posts to MongoDB Order Collection)
+        async function submitOnlineOrder(e) {
+            e.preventDefault();
+            const customerName = document.getElementById('custName').value.trim();
+            const customerPhone = document.getElementById('custPhone').value.trim();
+            const customerAddress = document.getElementById('custAddress').value.trim();
+            const city = document.getElementById('custCity').value.trim();
+
+            const totalAmount = cart.reduce((acc, c) => acc + (c.price * c.qty), 0);
+            const btn = document.getElementById('submitOrderBtn');
+
+            btn.disabled = true;
+            btn.innerText = "Submitting Order...";
+
+            try {
+                const res = await fetch(API_ORDERS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerName,
+                        customerPhone,
+                        customerAddress,
+                        city,
+                        items: cart,
+                        totalAmount
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("🎉 Order placed successfully! Tabarak Mega Mall team will contact you shortly.");
+                    cart = [];
+                    updateCartUI();
+                    closeCheckoutModal();
+                } else {
+                    alert("❌ Error: " + (data.message || "Failed to place order."));
+                }
+            } catch (err) {
+                alert("❌ Connection error! Ensure your Express backend server is running.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Confirm & Submit Order`;
+            }
         }
 
         function checkoutWhatsApp() {
@@ -282,6 +411,12 @@
         }
 
         function filterCategory(cat) {
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(btn => {
+                btn.className = "cat-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 px-3 py-2 rounded-xl";
+            });
+            event.target.className = "cat-btn bg-emerald-700 text-white px-3 py-2 rounded-xl";
+
             if(cat === 'all') {
                 renderProducts(products);
             } else {
@@ -296,7 +431,7 @@
             renderProducts(filtered);
         }
 
-        renderProducts(products);
+        loadProducts();
     </script>
 </body>
 </html>
