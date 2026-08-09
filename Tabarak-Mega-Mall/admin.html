@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Tabarak Mega Mall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Auth Guard: Real JWT Token Check -->
+    <script>
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            window.location.href = "login.html";
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="logo mall.jpg" alt="Tabarak Logo" class="h-10 w-auto object-contain rounded-md bg-white p-1" onerror="this.onerror=null; this.style.display='none';">
+                <div>
+                    <h1 class="text-lg font-black tracking-wide text-emerald-400">TABARAK MEGA MALL</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Store Management Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="openProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-user-gear text-emerald-400"></i> My Profile
+                </button>
+                <a href="index.html" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-store"></i> View Live Store
+                </a>
+                <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Total Products</span>
+                    <h3 id="statTotalProducts" class="text-2xl font-black text-slate-800">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-cart-flatbed"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Customer Orders</span>
+                    <h3 id="statTotalOrders" class="text-2xl font-black text-slate-800">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-cloud-check text-emerald-600"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase">System Status</span>
+                    <h3 class="text-lg font-black text-emerald-600">MongoDB Atlas Live</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-4 mb-6 border-b border-slate-200 pb-2">
+            <button onclick="switchTab('products')" id="tabProductsBtn" class="font-extrabold text-sm text-emerald-600 border-b-2 border-emerald-600 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-boxes-stacked"></i> Products Inventory
+            </button>
+            <button onclick="switchTab('orders')" id="tabOrdersBtn" class="font-bold text-sm text-slate-400 hover:text-slate-700 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-cart-flatbed"></i> Customer Orders
+            </button>
+        </div>
+
+        <!-- SECTION 1: PRODUCTS INVENTORY -->
+        <div id="productsSection">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <div class="relative w-full sm:w-72">
+                    <input type="text" id="adminSearch" onkeyup="filterAdminTable()" placeholder="Search products..." class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+
+                <button onclick="openProductModal()" class="w-full sm:w-auto bg-slate-900 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Add New Product
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                <th class="py-4 px-6">Product</th>
+                                <th class="py-4 px-6">Category</th>
+                                <th class="py-4 px-6">Price</th>
+                                <th class="py-4 px-6">Original Price</th>
+                                <th class="py-4 px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-100 text-sm font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: CUSTOMER ORDERS MANAGEMENT -->
+        <div id="ordersSection" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                <th class="py-4 px-6">Order ID & Date</th>
+                                <th class="py-4 px-6">Customer Details</th>
+                                <th class="py-4 px-6">Cart Items</th>
+                                <th class="py-4 px-6">Total Bill</th>
+                                <th class="py-4 px-6">Status Update</th>
+                                <th class="py-4 px-6 text-right">Notify / Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-100 text-sm font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Form (Add / Edit Product) -->
+    <div id="productModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 id="modalTitle" class="font-black text-lg text-slate-900">Add New Product</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form id="productForm" onsubmit="saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="editProductId">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Product Title</label>
+                    <input type="text" id="prodName" required placeholder="e.g., Premium Cooking Oil (5L)" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Category</label>
+                        <select id="prodCategory" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="grocery">Grocery</option>
+                            <option value="kitchen">Kitchen</option>
+                            <option value="frozen">Frozen</option>
+                            <option value="toys">Toys</option>
+                            <option value="cosmetics">Cosmetics</option>
+                            <option value="household">Household</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sale Price (Rs.)</label>
+                        <input type="number" id="prodPrice" required placeholder="2450" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Old Price (Rs.) <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
+                        <input type="number" id="prodOldPrice" placeholder="2600" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Image Source</label>
+                        <select id="imageSourceType" onchange="toggleImageInputType()" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="file">📁 Gallery / Device</option>
+                            <option value="url">🔗 Web Link URL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="fileUploadContainer">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Upload Image from Gallery</label>
+                    <input type="file" id="prodFile" accept="image/*" onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border border-slate-300 rounded-xl cursor-pointer">
+                </div>
+
+                <div id="urlUploadContainer" class="hidden">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Image URL</label>
+                    <input type="url" id="prodImg" placeholder="https://..." class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                    <img id="imagePreview" src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=150" alt="Preview" class="w-12 h-12 rounded-lg object-cover bg-white border border-slate-200">
+                    <span class="text-xs text-slate-500">Image Preview</span>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeProductModal()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" id="saveBtn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-black text-lg text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-emerald-600"></i> Admin Profile Settings
+                </h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form onsubmit="saveProfileDetails(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name</label>
+                    <input type="text" id="profFullName" required placeholder="Muhammad Ayyan" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username</label>
+                    <input type="text" id="profUsername" required placeholder="admin" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email Address (For OTP Recovery)</label>
+                    <input type="email" id="profEmail" required placeholder="admin@tabarak.com" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+                    <input type="text" id="profPhone" placeholder="03001234567" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeProfileModal()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" id="profSaveBtn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        © Tabarak Mega Mall Admin Panel | Cloud Connected
+    </footer>
+
+    <script src="admin.js"></script>
+</body>
+</html>
