@@ -130,18 +130,20 @@ function renderOrdersTable(orders) {
                         <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>🔴 Cancelled</option>
                     </select>
                 </td>
-                <td class="py-3 px-6 text-right">
+                <td class="py-3 px-6 text-right space-y-1">
+                    <button onclick="printOrderInvoice('${o._id}')" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white font-bold px-2.5 py-1 rounded-lg transition text-[10px]">
+                        <i class="fa-solid fa-print"></i> Print Receipt
+                    </button>
                     ${phoneClean ? `
-                        <a href="https://wa.me/92${phoneClean.startsWith('0') ? phoneClean.substring(1) : phoneClean}?text=${whatsappMsg}" target="_blank" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl transition text-[10px]">
-                            <i class="fa-brands fa-whatsapp text-xs"></i> WhatsApp Update
+                        <a href="https://wa.me/92${phoneClean.startsWith('0') ? phoneClean.substring(1) : phoneClean}?text=${whatsappMsg}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg transition text-[10px]">
+                            <i class="fa-brands fa-whatsapp text-xs"></i> WhatsApp
                         </a>
-                    ` : '<span class="text-slate-400">-</span>'}
+                    ` : ''}
                 </td>
             </tr>
         `;
     }).join('');
 }
-
 async function updateOrderStatus(id, newStatus) {
     const token = localStorage.getItem('adminToken');
     try {
@@ -328,6 +330,36 @@ function filterAdminTable() {
     const filtered = adminProducts.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
     renderAdminTable(filtered);
 }
+function printOrderInvoice(orderId) {
+    const order = adminOrders.find(o => o._id === orderId);
+    if (!order) return alert("Order details not found!");
 
+    // Populate Invoice Fields
+    document.getElementById('invNumber').innerText = `#${order._id.slice(-6).toUpperCase()}`;
+    document.getElementById('invDate').innerText = new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('invCustName').innerText = order.customerName || 'Guest Customer';
+    document.getElementById('invCustPhone').innerText = order.customerPhone || '-';
+    document.getElementById('invCustAddress').innerText = `${order.customerAddress || ''}, ${order.city || 'Karianwala'}`;
+
+    // Populate Items
+    const itemsTbody = document.getElementById('invItemsBody');
+    itemsTbody.innerHTML = order.items.map(i => {
+        const qty = i.qty || i.quantity || 1;
+        const total = (i.price || 0) * qty;
+        return `
+            <tr>
+                <td class="py-2 px-3 font-bold text-slate-800">${i.name}</td>
+                <td class="py-2 px-3 text-center font-semibold">${qty}</td>
+                <td class="py-2 px-3 text-right">Rs. ${(i.price || 0).toLocaleString()}</td>
+                <td class="py-2 px-3 text-right font-bold text-emerald-800">Rs. ${total.toLocaleString()}</td>
+            </tr>
+        `;
+    }).join('');
+
+    document.getElementById('invGrandTotal').innerText = `Rs. ${order.totalAmount.toLocaleString()}`;
+
+    // Trigger Browser Print Dialogue
+    window.print();
+}
 fetchProducts();
 fetchOrders();

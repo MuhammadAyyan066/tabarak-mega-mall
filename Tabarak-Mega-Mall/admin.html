@@ -259,5 +259,64 @@
     </footer>
 
     <script src="admin.js"></script>
+    <!-- Printable Invoice Container (Hidden on Screen, Visible on Print) -->
+<div id="printableInvoice" class="hidden print:block p-8 bg-white text-slate-900 font-sans max-w-2xl mx-auto border">
+    <div class="flex justify-between items-center border-b-2 border-emerald-600 pb-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-black text-emerald-700 tracking-wide">TABARAK MEGA MALL</h1>
+            <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Store Management & Supermarket</p>
+            <p class="text-xs text-slate-500">Main Market, Karianwala, Gujrat</p>
+        </div>
+        <div class="text-right">
+            <h2 class="text-xl font-bold uppercase text-slate-800">TAX INVOICE</h2>
+            <p id="invNumber" class="text-xs font-mono text-slate-600 mt-1">#000000</p>
+            <p id="invDate" class="text-xs text-slate-500"></p>
+        </div>
+    </div>
+
+    <!-- Customer Details -->
+    <div class="bg-slate-50 p-4 rounded-xl mb-6 border border-slate-200">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Customer Details</h3>
+        <div class="grid grid-cols-2 gap-4 text-xs">
+            <div>
+                <p class="text-slate-500">Name:</p>
+                <p id="invCustName" class="font-bold text-slate-800">-</p>
+            </div>
+            <div>
+                <p class="text-slate-500">Phone / WhatsApp:</p>
+                <p id="invCustPhone" class="font-bold text-slate-800">-</p>
+            </div>
+            <div class="col-span-2">
+                <p class="text-slate-500">Delivery Address:</p>
+                <p id="invCustAddress" class="font-bold text-slate-800">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="w-full text-left text-xs mb-6 border-collapse">
+        <thead>
+            <tr class="bg-slate-100 border-b border-slate-300 font-bold uppercase text-slate-600">
+                <th class="py-2.5 px-3">Item Description</th>
+                <th class="py-2.5 px-3 text-center">Qty</th>
+                <th class="py-2.5 px-3 text-right">Price</th>
+                <th class="py-2.5 px-3 text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody id="invItemsBody" class="divide-y divide-slate-200"></tbody>
+    </table>
+
+    <!-- Invoice Summary -->
+    <div class="flex justify-between items-center border-t-2 border-slate-800 pt-4">
+        <div>
+            <p class="text-xs font-bold text-emerald-700">Payment Status: Cash on Delivery (COD)</p>
+            <p class="text-[10px] text-slate-400 mt-1">Thank you for shopping at Tabarak Mega Mall!</p>
+        </div>
+        <div class="text-right">
+            <span class="text-xs text-slate-500 font-bold uppercase">Grand Total:</span>
+            <h2 id="invGrandTotal" class="text-xl font-black text-emerald-800">Rs. 0</h2>
+        </div>
+    </div>
+</div>
 </body>
 </html>
