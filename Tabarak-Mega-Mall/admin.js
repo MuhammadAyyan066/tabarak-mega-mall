@@ -89,10 +89,23 @@ async function fetchOrders() {
 
 function renderOrdersTable(orders) {
     const tbody = document.getElementById('ordersTableBody');
-    document.getElementById('statTotalOrders').innerText = orders.length;
+    
+    // Calculate Analytics Counters
+    const totalOrdersCount = adminOrders.length;
+    const pendingOrdersCount = adminOrders.filter(o => o.status === 'Pending').length;
+    
+    // Total Revenue (Only Delivered/Completed or Active Non-Cancelled Orders)
+    const totalRevenue = adminOrders
+        .filter(o => o.status !== 'Cancelled')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+    // Update UI Stats
+    if(document.getElementById('statTotalOrders')) document.getElementById('statTotalOrders').innerText = totalOrdersCount;
+    if(document.getElementById('statPendingOrders')) document.getElementById('statPendingOrders').innerText = pendingOrdersCount;
+    if(document.getElementById('statTotalRevenue')) document.getElementById('statTotalRevenue').innerText = `Rs. ${totalRevenue.toLocaleString()}`;
 
     if (orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No customer orders recorded yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No matching orders found.</td></tr>`;
         return;
     }
 
@@ -143,6 +156,16 @@ function renderOrdersTable(orders) {
             </tr>
         `;
     }).join('');
+}
+
+// Order Filter Function
+function filterOrdersByStatus(status) {
+    if (status === 'All') {
+        renderOrdersTable(adminOrders);
+    } else {
+        const filtered = adminOrders.filter(o => o.status === status || (status === 'Delivered' && o.status === 'Completed'));
+        renderOrdersTable(filtered);
+    }
 }
 async function updateOrderStatus(id, newStatus) {
     const token = localStorage.getItem('adminToken');

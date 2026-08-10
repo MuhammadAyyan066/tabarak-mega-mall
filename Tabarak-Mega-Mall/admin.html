@@ -46,39 +46,65 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase">Total Products</span>
-                    <h3 id="statTotalProducts" class="text-2xl font-black text-slate-800">0</h3>
-                </div>
+     <!-- Analytics & Revenue Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Revenue</p>
+                <h3 id="statTotalRevenue" class="text-2xl font-black text-emerald-800 mt-1">Rs. 0</h3>
             </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-cart-flatbed"></i>
-                </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase">Customer Orders</span>
-                    <h3 id="statTotalOrders" class="text-2xl font-black text-slate-800">0</h3>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-cloud-check text-emerald-600"></i>
-                </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase">System Status</span>
-                    <h3 class="text-lg font-black text-emerald-600">MongoDB Atlas Live</h3>
-                </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-wallet"></i>
             </div>
         </div>
+    </div>
 
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Orders</p>
+                <h3 id="statTotalOrders" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-boxes-packing"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Pending Orders</p>
+                <h3 id="statPendingOrders" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Products</p>
+                <h3 id="statTotalProducts" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-cubes"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status Filter Buttons -->
+<div class="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
+    <button onclick="filterOrdersByStatus('All')" class="order-filter-btn bg-slate-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition">All Orders</button>
+    <button onclick="filterOrdersByStatus('Pending')" class="order-filter-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">🟡 Pending</button>
+    <button onclick="filterOrdersByStatus('Dispatched')" class="order-filter-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">🔵 Dispatched</button>
+    <button onclick="filterOrdersByStatus('Delivered')" class="order-filter-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">🟢 Delivered</button>
+    <button onclick="filterOrdersByStatus('Cancelled')" class="order-filter-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs font-bold transition">🔴 Cancelled</button>
+</div>
         <!-- Navigation Tabs -->
         <div class="flex gap-4 mb-6 border-b border-slate-200 pb-2">
             <button onclick="switchTab('products')" id="tabProductsBtn" class="font-extrabold text-sm text-emerald-600 border-b-2 border-emerald-600 pb-2 flex items-center gap-2">
