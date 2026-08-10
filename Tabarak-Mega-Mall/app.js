@@ -1,5 +1,7 @@
-const API_PRODUCTS = 'http://localhost:5000/api/products';
-const API_ORDERS = 'http://localhost:5000/api/orders';
+// Base API URL linked to Vercel Live Backend
+const API_BASE_URL = 'https://tabarak-mega-mall-backend.vercel.app';
+const API_PRODUCTS = `${API_BASE_URL}/api/products`;
+const API_ORDERS = `${API_BASE_URL}/api/orders`;
 
 // Default 50 Products with Stock Quantities
 const defaultProducts = [
