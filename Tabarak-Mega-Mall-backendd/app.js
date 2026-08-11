@@ -29,9 +29,12 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 
-// Root Check
+// Root Health Check Route
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Tabarak Mega Mall Backend API is Running Live!' });
+  res.status(200).json({ 
+    success: true, 
+    message: 'Tabarak Mega Mall Backend API is Live & Running!' 
+  });
 });
 
 // 5. Port & Host Assignment (CRITICAL FOR RAILWAY)
