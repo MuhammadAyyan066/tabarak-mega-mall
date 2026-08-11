@@ -3,7 +3,7 @@ const API_BASE_URL = 'https://tabarak-mega-mall-backend-production.up.railway.ap
 const PRODUCTS = `${API_BASE_URL}/api/products`;
 const ORDERS = `${API_BASE_URL}/api/orders`;
 
-// Default 50 Products with Stock Quantities
+// Default 50 Products with Stock Quantities (Fallback)
 const defaultProducts = [
     // --- GROCERY & PANTRY ---
     { _id: 'g1', name: "Premium Cooking Oil (5L)", category: "grocery", price: 2450, oldPrice: 2600, stock: 15, image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500" },
@@ -71,41 +71,18 @@ const defaultProducts = [
 let products = [];
 let cart = [];
 
-// Load All Products
+// Load All Products Function (Fixed to store in global `products` array)
 async function loadProducts() {
   try {
     const response = await fetch(PRODUCTS);
     if (!response.ok) throw new Error("Could not fetch live products");
     const data = await response.json();
-    return data && data.length > 0 ? data : defaultProducts;
+    products = data && data.length > 0 ? data : defaultProducts;
   } catch (err) {
     console.warn("API Connection failed, loading fallback data:", err);
-    return defaultProducts;
-  }
-}
-
-// Submit Customer Order
-async function createOrder(orderPayload) {
-  try {
-    const response = await fetch(ORDERS, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(orderPayload)
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      alert("Order placed successfully!");
-      return result;
-    } else {
-      throw new Error(result.message || "Failed to submit order.");
-    }
-  } catch (error) {
-    console.error("Submit Order Error:", error);
-    alert("Connection error! Ensure backend is running.");
+    products = defaultProducts;
+  } finally {
+    renderProducts(products);
   }
 }
 
@@ -224,6 +201,7 @@ function closeCheckoutModal() {
     document.getElementById('checkoutModal').classList.add('hidden');
 }
 
+// Submit Order Function (Fixed endpoint variable to `ORDERS`)
 async function submitOnlineOrder(e) {
     e.preventDefault();
     const customerName = document.getElementById('custName').value.trim();
@@ -238,7 +216,7 @@ async function submitOnlineOrder(e) {
     btn.innerText = "Submitting Order...";
 
     try {
-        const res = await fetch(API_ORDERS, {
+        const res = await fetch(ORDERS, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -262,6 +240,7 @@ async function submitOnlineOrder(e) {
             alert("❌ " + (data.message || "Failed to place order."));
         }
     } catch (err) {
+        console.error("Order submit error:", err);
         alert("❌ Connection error! Ensure backend is running.");
     } finally {
         btn.disabled = false;
@@ -281,7 +260,7 @@ function checkoutWhatsApp() {
     window.open(`https://wa.me/923143492111?text=${encodeURIComponent(text)}`, '_blank');
 }
 
-function filterCategory(cat) {
+function filterCategory(cat, event) {
     const buttons = document.querySelectorAll('.cat-btn');
     buttons.forEach(btn => {
         btn.className = "cat-btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 px-3 py-2 rounded-xl";
@@ -304,4 +283,12 @@ function filterProducts() {
     renderProducts(filtered);
 }
 
-loadProducts();
+// Initializing store
+document.addEventListener('DOMContentLoaded', () => {
+    loadProducts();
+    
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', submitOnlineOrder);
+    }
+});
