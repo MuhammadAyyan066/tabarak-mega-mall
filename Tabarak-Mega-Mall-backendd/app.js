@@ -7,14 +7,14 @@ dotenv.config();
 
 const app = express();
 
-// 1. Fixed CORS Policy (Compatible with Express 5)
+// 1. Fixed CORS Policy
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Express 5 compatible wildcards (Notice the /(.*) regex instead of '*')
+// Express 5 compatible wildcard options
 app.options(/(.*)/, cors());
 
 // 2. Body Parsers
@@ -34,7 +34,8 @@ app.get('/', (req, res) => {
   res.status(200).json({ message: 'Tabarak Mega Mall Backend API is Running Live!' });
 });
 
+// 5. Port & Host Assignment (CRITICAL FOR RAILWAY)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Express Server running on port ${PORT}`);
 });
