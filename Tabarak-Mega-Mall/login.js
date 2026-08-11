@@ -1,4 +1,7 @@
-const API_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
+// Automatic API URL Selector (Local vs Live)
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : 'https://tabarak-mega-mall-backend-production.up.railway.app/api';
 
 // Redirect if already authenticated
 if (localStorage.getItem('adminToken')) {
@@ -57,7 +60,8 @@ async function handleLogin(e) {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    // FIXED: Removed duplicate /api
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -105,7 +109,8 @@ async function handleSendOtp(e) {
   }
 
   try {
-    const res = await fetch(`${API_URL}/api/auth/send-otp`, {
+    // FIXED: Removed duplicate /api
+    const res = await fetch(`${API_URL}/auth/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -139,8 +144,8 @@ async function handleVerifyReset(e) {
   const newPassword = document.getElementById('newPass').value.trim();
 
   try {
-    // Corrected Endpoint URL with /api/auth
-    const res = await fetch(`${API_URL}/api/auth/verify-reset`, {
+    // FIXED: Removed duplicate /api
+    const res = await fetch(`${API_URL}/auth/verify-reset`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
