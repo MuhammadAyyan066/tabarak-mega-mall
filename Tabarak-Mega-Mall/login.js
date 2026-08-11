@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
 
 // Redirect if already authenticated
 if (localStorage.getItem('adminToken')) {

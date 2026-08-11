@@ -1,6 +1,6 @@
-const API_BASE = 'https://tabarak-mega-mall-backend.vercel.app';
-const AUTH_BASE = 'https://tabarak-mega-mall-backend.vercel.app';
-const ORDERS_BASE = 'https://tabarak-mega-mall-backend.vercel.app';
+const API_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
+const AUTH_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
+const ORDERS_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
 
 let adminProducts = [];
 let adminOrders = [];

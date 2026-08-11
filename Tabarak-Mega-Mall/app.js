@@ -1,5 +1,5 @@
 // Base API URL linked to Vercel Live Backend
-const API_BASE_URL = 'https://tabarak-mega-mall-backend.vercel.app';
+const API_BASE_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
 const API_PRODUCTS = `${API_BASE_URL}/api/products`;
 const API_ORDERS = `${API_BASE_URL}/api/orders`;
 
