@@ -12,30 +12,20 @@ function handleLogout() {
     localStorage.removeItem('adminUser');
     window.location.href = "login.html";
 }
+
 // Fetch Admin Dashboard Data
 async function fetchAdminData() {
-  const token = localStorage.getItem('adminToken');
-  if (!token) {
-    window.location.href = "login.html";
-    return;
-  }
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
 
-  try {
-    // Fetch Products
-    const prodRes = await fetch(PRODUCTS_BASE, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (prodRes.ok) adminProducts = await prodRes.json();
-
-    // Fetch Orders
-    const orderRes = await fetch(ORDERS_BASE, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (orderRes.ok) adminOrders = await orderRes.json();
-
-  } catch (error) {
-    console.error("Error fetching admin data:", error);
-  }
+    try {
+        await Promise.all([fetchProducts(), fetchOrders()]);
+    } catch (error) {
+        console.error("Error fetching admin data:", error);
+    }
 }
 
 function switchTab(tab) {
@@ -53,20 +43,28 @@ function switchTab(tab) {
     }
 }
 
+// FIX 1: Corrected API Endpoint to PRODUCTS_BASE
 async function fetchProducts() {
+    const token = localStorage.getItem('adminToken');
     try {
-        const res = await fetch(API_BASE);
-        const data = await res.json();
-        adminProducts = data;
-        renderAdminTable(adminProducts);
+        const res = await fetch(PRODUCTS_BASE, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            adminProducts = data;
+            renderAdminTable(adminProducts);
+        }
     } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error("Product Fetch Error:", err);
     }
 }
 
 function renderAdminTable(items) {
     const tbody = document.getElementById('adminTableBody');
-    document.getElementById('statTotalProducts').innerText = items.length;
+    if (document.getElementById('statTotalProducts')) {
+        document.getElementById('statTotalProducts').innerText = items.length;
+    }
 
     if (items.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No products found in inventory.</td></tr>`;
@@ -106,8 +104,10 @@ async function fetchOrders() {
         const res = await fetch(ORDERS_BASE, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        adminOrders = await res.json();
-        renderOrdersTable(adminOrders);
+        if (res.ok) {
+            adminOrders = await res.json();
+            renderOrdersTable(adminOrders);
+        }
     } catch (err) {
         console.error("Order fetch error:", err);
     }
@@ -116,16 +116,13 @@ async function fetchOrders() {
 function renderOrdersTable(orders) {
     const tbody = document.getElementById('ordersTableBody');
     
-    // Calculate Analytics Counters
     const totalOrdersCount = adminOrders.length;
     const pendingOrdersCount = adminOrders.filter(o => o.status === 'Pending').length;
     
-    // Total Revenue (Only Delivered/Completed or Active Non-Cancelled Orders)
     const totalRevenue = adminOrders
         .filter(o => o.status !== 'Cancelled')
         .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-    // Update UI Stats
     if(document.getElementById('statTotalOrders')) document.getElementById('statTotalOrders').innerText = totalOrdersCount;
     if(document.getElementById('statPendingOrders')) document.getElementById('statPendingOrders').innerText = pendingOrdersCount;
     if(document.getElementById('statTotalRevenue')) document.getElementById('statTotalRevenue').innerText = `Rs. ${totalRevenue.toLocaleString()}`;
@@ -184,7 +181,6 @@ function renderOrdersTable(orders) {
     }).join('');
 }
 
-// Order Filter Function
 function filterOrdersByStatus(status) {
     if (status === 'All') {
         renderOrdersTable(adminOrders);
@@ -193,6 +189,7 @@ function filterOrdersByStatus(status) {
         renderOrdersTable(filtered);
     }
 }
+
 async function updateOrderStatus(id, newStatus) {
     const token = localStorage.getItem('adminToken');
     try {
@@ -296,6 +293,7 @@ function closeProductModal() {
     document.getElementById('productModal').classList.add('hidden');
 }
 
+// FIX 2: Corrected API Endpoint to PRODUCTS_BASE
 async function saveProduct(e) {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
@@ -317,8 +315,8 @@ async function saveProduct(e) {
 
     try {
         let res = id 
-            ? await fetch(`${API_BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) })
-            : await fetch(API_BASE, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            ? await fetch(`${PRODUCTS_BASE}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) })
+            : await fetch(PRODUCTS_BASE, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
 
         if (res.ok) {
             closeProductModal();
@@ -359,11 +357,12 @@ function editProduct(id) {
     document.getElementById('productModal').classList.remove('hidden');
 }
 
+// FIX 3: Corrected API Endpoint to PRODUCTS_BASE
 async function deleteProduct(id) {
     if (confirm("Are you sure you want to delete this product?")) {
         const token = localStorage.getItem('adminToken');
         try {
-            const res = await fetch(`${API_BASE}/${id}`, {
+            const res = await fetch(`${PRODUCTS_BASE}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -379,18 +378,17 @@ function filterAdminTable() {
     const filtered = adminProducts.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
     renderAdminTable(filtered);
 }
+
 function printOrderInvoice(orderId) {
     const order = adminOrders.find(o => o._id === orderId);
     if (!order) return alert("Order details not found!");
 
-    // Populate Invoice Fields
     document.getElementById('invNumber').innerText = `#${order._id.slice(-6).toUpperCase()}`;
     document.getElementById('invDate').innerText = new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('invCustName').innerText = order.customerName || 'Guest Customer';
     document.getElementById('invCustPhone').innerText = order.customerPhone || '-';
     document.getElementById('invCustAddress').innerText = `${order.customerAddress || ''}, ${order.city || 'Karianwala'}`;
 
-    // Populate Items
     const itemsTbody = document.getElementById('invItemsBody');
     itemsTbody.innerHTML = order.items.map(i => {
         const qty = i.qty || i.quantity || 1;
@@ -407,8 +405,8 @@ function printOrderInvoice(orderId) {
 
     document.getElementById('invGrandTotal').innerText = `Rs. ${order.totalAmount.toLocaleString()}`;
 
-    // Trigger Browser Print Dialogue
     window.print();
 }
-fetchProducts();
-fetchOrders();
+
+// Initial Data Fetch
+document.addEventListener('DOMContentLoaded', fetchAdminData);
