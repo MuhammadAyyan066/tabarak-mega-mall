@@ -1,6 +1,7 @@
 const API_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
-const AUTH_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
-const ORDERS_BASE = 'https://tabarak-mega-mall-backend-production.up.railway.app';
+const AUTH_BASE = `${API_BASE}/api/auth`;
+const PRODUCTS_BASE = `${API_BASE}/api/products`;
+const ORDERS_BASE = `${API_BASE}/api/orders`;
 
 let adminProducts = [];
 let adminOrders = [];
@@ -10,6 +11,31 @@ function handleLogout() {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
     window.location.href = "login.html";
+}
+// Fetch Admin Dashboard Data
+async function fetchAdminData() {
+  const token = localStorage.getItem('adminToken');
+  if (!token) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    // Fetch Products
+    const prodRes = await fetch(PRODUCTS_BASE, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (prodRes.ok) adminProducts = await prodRes.json();
+
+    // Fetch Orders
+    const orderRes = await fetch(ORDERS_BASE, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (orderRes.ok) adminOrders = await orderRes.json();
+
+  } catch (error) {
+    console.error("Error fetching admin data:", error);
+  }
 }
 
 function switchTab(tab) {

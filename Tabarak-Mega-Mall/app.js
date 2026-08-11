@@ -1,4 +1,4 @@
-// Base API URL linked to Vercel Live Backend
+// Base API URL linked to Railway Live Backend
 const API_BASE_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
 const PRODUCTS = `${API_BASE_URL}/api/products`;
 const ORDERS = `${API_BASE_URL}/api/orders`;
@@ -71,19 +71,42 @@ const defaultProducts = [
 let products = [];
 let cart = [];
 
+// Load All Products
 async function loadProducts() {
-    try {
-        const res = await fetch(API_PRODUCTS);
-        if (res.ok) {
-            const data = await res.json();
-            products = (data && data.length > 0) ? data : defaultProducts;
-        } else {
-            products = defaultProducts;
-        }
-    } catch (err) {
-        products = defaultProducts;
+  try {
+    const response = await fetch(PRODUCTS);
+    if (!response.ok) throw new Error("Could not fetch live products");
+    const data = await response.json();
+    return data && data.length > 0 ? data : defaultProducts;
+  } catch (err) {
+    console.warn("API Connection failed, loading fallback data:", err);
+    return defaultProducts;
+  }
+}
+
+// Submit Customer Order
+async function createOrder(orderPayload) {
+  try {
+    const response = await fetch(ORDERS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderPayload)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("Order placed successfully!");
+      return result;
+    } else {
+      throw new Error(result.message || "Failed to submit order.");
     }
-    renderProducts(products);
+  } catch (error) {
+    console.error("Submit Order Error:", error);
+    alert("Connection error! Ensure backend is running.");
+  }
 }
 
 function renderProducts(items) {

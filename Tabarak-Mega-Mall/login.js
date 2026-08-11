@@ -2,23 +2,81 @@ const API_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
 
 // Redirect if already authenticated
 if (localStorage.getItem('adminToken')) {
-    window.location.href = "admin.html";
+  window.location.href = "admin.html";
 }
 
 function showAlert(msg, isSuccess = false) {
-    const alertBox = document.getElementById('alertBox');
-    const alertMsg = document.getElementById('alertMessage');
-    const alertIcon = document.getElementById('alertIcon');
+  const alertBox = document.getElementById('alertBox');
+  const alertMsg = document.getElementById('alertMessage');
+  const alertIcon = document.getElementById('alertIcon');
 
-    alertMsg.innerText = msg;
-    alertBox.className = isSuccess 
-        ? "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700"
-        : "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700";
-    
-    alertIcon.className = isSuccess ? "fa-solid fa-circle-check text-base" : "fa-solid fa-circle-exclamation text-base";
-    alertBox.classList.remove('hidden');
+  if (!alertBox || !alertMsg) return;
+
+  alertMsg.innerText = msg;
+  
+  alertBox.className = isSuccess
+    ? "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800"
+    : "mb-4 p-3 rounded-2xl text-xs font-bold flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-800";
+
+  if (alertIcon) {
+    alertIcon.className = isSuccess
+      ? "fa-solid fa-circle-check text-base text-emerald-600"
+      : "fa-solid fa-circle-exclamation text-base text-rose-600";
+  }
+
+  alertBox.classList.remove('hidden');
 }
 
+// Handle Admin Login Submission
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('loginForm');
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+
+      if (!username || !password) {
+        showAlert('Username and password are required!');
+        return;
+      }
+
+      try {
+        // Hits Railway Backend /api/auth/login
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.token) {
+          localStorage.setItem('adminToken', data.token);
+          if (data.user) {
+            localStorage.setItem('adminUser', JSON.stringify(data.user));
+          }
+          showAlert('Login successful! Redirecting...', true);
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 1000);
+        } else {
+          showAlert(data.message || 'Invalid username or password.');
+        }
+      } catch (error) {
+        console.error('Login Error:', error);
+        showAlert('Unable to connect to server! Make sure backend is running.');
+      }
+    });
+  }
+});
 async function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('username').value.trim();
