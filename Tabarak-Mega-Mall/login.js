@@ -1,7 +1,9 @@
-// Automatic API URL Selector (Local vs Live)
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000/api'
-  : 'https://tabarak-mega-mall-backend-production.up.railway.app/api';
+// Local aur Live ko khud detect karne ka code
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : 'https://tabarak-mega-mall-backend-production.up.railway.app';
+
+const AUTH_BASE = `${API_BASE}/api/auth`;
 
 // Redirect if already authenticated
 if (localStorage.getItem('adminToken')) {
@@ -60,8 +62,7 @@ async function handleLogin(e) {
   }
 
   try {
-    // FIXED: Removed duplicate /api
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`${AUTH_BASE}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -109,8 +110,7 @@ async function handleSendOtp(e) {
   }
 
   try {
-    // FIXED: Removed duplicate /api
-    const res = await fetch(`${API_URL}/auth/send-otp`, {
+    const res = await fetch(`${AUTH_BASE}/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -127,7 +127,7 @@ async function handleSendOtp(e) {
       showAlert("❌ " + (data.message || "Failed to send OTP"));
     }
   } catch (err) {
-    alert("❌ Server Connection Error!");
+    showAlert("❌ Server Connection Error!");
   } finally {
     if (btn) {
       btn.innerText = "Send OTP Verification Code";
@@ -144,8 +144,7 @@ async function handleVerifyReset(e) {
   const newPassword = document.getElementById('newPass').value.trim();
 
   try {
-    // FIXED: Removed duplicate /api
-    const res = await fetch(`${API_URL}/auth/verify-reset`, {
+    const res = await fetch(`${AUTH_BASE}/verify-reset`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
