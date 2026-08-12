@@ -19,6 +19,11 @@ app.options(/(.*)/, cors());
 
 // 2. Body Parsers
 app.use(express.json({ limit: '10mb' }));
+// Request Logger Middleware
+app.use((req, res, next) => {
+    console.log(`📥 Incoming Request: ${req.method} ${req.url}`);
+    next();
+});
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 3. Connect MongoDB

@@ -15,9 +15,18 @@ const transporter = nodemailer.createTransport({
 exports.loginAdmin = async (req, res) => {
     try {
         const { username, password } = req.body;
+        console.log("Login attempt for username:", username); // Check karne ke liye
+
         const user = await User.findOne({ $or: [{ username }, { email: username }] });
-        
-        if (!user || !(await user.comparePassword(password))) {
+        if (!user) {
+            console.log("User not found in DB!");
+            return res.status(400).json({ message: 'Invalid Username or Password!' });
+        }
+
+        const isMatch = await user.comparePassword(password);
+        console.log("Password match status:", isMatch);
+
+        if (!isMatch) {
             return res.status(400).json({ message: 'Invalid Username or Password!' });
         }
         
@@ -33,6 +42,7 @@ exports.loginAdmin = async (req, res) => {
             user: { fullName: user.fullName, username: user.username, email: user.email, phone: user.phone }
         });
     } catch (err) {
+        console.error("CRITICAL LOGIN ERROR:", err); // Asal error yahan terminal par print hoga
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
