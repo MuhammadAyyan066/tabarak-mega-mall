@@ -1,4 +1,41 @@
 const Order = require('../models/Order');
+const nodemailer = require('nodemailer');
+
+// Transporter setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Send Admin Email Function
+async function sendAdminEmail(orderData) {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, 
+        subject: '🚀 New Order Received - Tabarak Mega Mall',
+        html: `
+            <h2>New Order Placed!</h2>
+            <p><strong>Customer Name:</strong> ${orderData.customerName}</p>
+            <p><strong>Phone:</strong> ${orderData.customerPhone}</p>
+            <p><strong>Address:</strong> ${orderData.customerAddress}, ${orderData.city}</p>
+            <p><strong>Total Amount:</strong> Rs. ${orderData.totalAmount}</p>
+            <h3>Items:</h3>
+            <ul>
+                ${orderData.items.map(i => `<li>${i.name} x ${i.qty || i.quantity || 1} (Rs. ${(i.price || 0) * (i.qty || i.quantity || 1)})</li>`).join('')}
+            </ul>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('📧 Admin email sent successfully!');
+    } catch (error) {
+        console.error('❌ Email sending failed:', error);
+    }
+}
 
 // Create New Order
 exports.createOrder = async (req, res) => {
@@ -19,6 +56,10 @@ exports.createOrder = async (req, res) => {
         });
 
         await newOrder.save();
+
+        // 🚀 CALL EMAIL FUNCTION HERE AFTER SAVING ORDER
+        await sendAdminEmail(newOrder);
+
         res.status(201).json({ message: 'Order created successfully!', order: newOrder });
     } catch (err) {
         console.error("Order Creation Detailed Error:", err);
