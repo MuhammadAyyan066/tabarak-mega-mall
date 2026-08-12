@@ -1,5 +1,8 @@
-// Base API URL linked to Railway Live Backend
-const API_BASE_URL = 'https://tabarak-mega-mall-backend-production.up.railway.app';
+// Local aur Live ko khud detect karne ka code
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : 'https://tabarak-mega-mall-backend-production.up.railway.app';
+
 const PRODUCTS = `${API_BASE_URL}/api/products`;
 const ORDERS = `${API_BASE_URL}/api/orders`;
 
