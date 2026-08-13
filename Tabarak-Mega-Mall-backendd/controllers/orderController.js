@@ -1,7 +1,8 @@
 const Order = require('../models/Order');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
-// Transporter setup
+// Transporter setup for Email
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -37,6 +38,34 @@ async function sendAdminEmail(orderData) {
     }
 }
 
+// Send WhatsApp Notification Function (UltraMsg)
+async function sendWhatsAppNotification(orderData) {
+    const instanceId = process.env.ULTRAMSG_INSTANCE_ID;
+    const token = process.env.ULTRAMSG_TOKEN;
+    
+    const phoneClean = orderData.customerPhone ? orderData.customerPhone.replace(/[^0-9]/g, '') : '';
+    const recipientPhone = phoneClean.startsWith('92') ? phoneClean : `92${phoneClean.startsWith('0') ? phoneClean.substring(1) : phoneClean}`;
+
+    const message = `🚀 *New Order Placed - Tabarak Mega Mall*\n\n` +
+                    `Order ID: #${orderData._id.toString().slice(-6)}\n` +
+                    `Name: ${orderData.customerName}\n` +
+                    `Phone: ${orderData.customerPhone}\n` +
+                    `Address: ${orderData.customerAddress}, ${orderData.city}\n` +
+                    `Total: Rs. ${orderData.totalAmount}\n\n` +
+                    `Thank you for shopping with us!`;
+
+    try {
+        const response = await axios.post(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
+            token: token,
+            to: recipientPhone,
+            body: message
+        });
+        console.log('📱 WhatsApp message sent:', response.data);
+    } catch (error) {
+        console.error('❌ WhatsApp sending failed:', error.response?.data || error.message);
+    }
+}
+
 // Create New Order
 exports.createOrder = async (req, res) => {
     try {
@@ -55,10 +84,12 @@ exports.createOrder = async (req, res) => {
             totalAmount: Number(totalAmount) || 0
         });
 
+        // 1. Order Save Karein Database Mein
         await newOrder.save();
 
-        // 🚀 CALL EMAIL FUNCTION HERE AFTER SAVING ORDER
-        await sendAdminEmail(newOrder);
+        // 2. Email aur WhatsApp Notifications Send Karein
+        await sendAdminEmail(newOrder);          // Email notification
+        await sendWhatsAppNotification(newOrder); // WhatsApp notification
 
         res.status(201).json({ message: 'Order created successfully!', order: newOrder });
     } catch (err) {
