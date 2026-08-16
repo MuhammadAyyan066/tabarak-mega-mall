@@ -9,22 +9,22 @@ const app = express();
 
 // 1. Fixed CORS Policy
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Express 5 compatible wildcard options
 app.options(/(.*)/, cors());
 
-// 2. Body Parsers
+// 2. Body Parsers & Logger
 app.use(express.json({ limit: '10mb' }));
-// Request Logger Middleware
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 app.use((req, res, next) => {
     console.log(`📥 Incoming Request: ${req.method} ${req.url}`);
     next();
 });
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 3. Connect MongoDB
 connectDB();
@@ -36,14 +36,14 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 
 // Root Health Check Route
 app.get('/', (req, res) => {
-  res.status(200).json({ 
-    success: true, 
-    message: 'Tabarak Mega Mall Backend API is Live & Running!' 
-  });
+    res.status(200).json({ 
+        success: true, 
+        message: 'Tabarak Mega Mall Backend API is Live & Running!' 
+    });
 });
 
 // 5. Port & Host Assignment (CRITICAL FOR RAILWAY)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Express Server running on port ${PORT}`);
+    console.log(`🚀 Express Server running on port ${PORT}`);
 });

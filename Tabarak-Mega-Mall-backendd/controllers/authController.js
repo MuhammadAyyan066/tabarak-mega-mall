@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 exports.loginAdmin = async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log("Login attempt for username:", username); // Check karne ke liye
+        console.log("Login attempt for username:", username);
 
         const user = await User.findOne({ $or: [{ username }, { email: username }] });
         if (!user) {
@@ -42,7 +42,7 @@ exports.loginAdmin = async (req, res) => {
             user: { fullName: user.fullName, username: user.username, email: user.email, phone: user.phone }
         });
     } catch (err) {
-        console.error("CRITICAL LOGIN ERROR:", err); // Asal error yahan terminal par print hoga
+        console.error("CRITICAL LOGIN ERROR:", err);
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
@@ -57,13 +57,11 @@ exports.sendForgotPasswordOtp = async (req, res) => {
             return res.status(404).json({ message: 'No admin registered with this email address!' });
         }
 
-        // Generate 6 Digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.resetOtp = otp;
-        user.resetOtpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+        user.resetOtpExpires = Date.now() + 10 * 60 * 1000;
         await user.save();
 
-        // Send Email
         const mailOptions = {
             from: `"Tabarak Mega Mall Security" <${process.env.EMAIL_USER}>`,
             to: user.email,

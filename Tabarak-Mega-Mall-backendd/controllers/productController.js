@@ -13,8 +13,16 @@ exports.getAllProducts = async (req, res) => {
 // Add New Product
 exports.addProduct = async (req, res) => {
     try {
-        const { name, category, price, oldPrice, image } = req.body;
-        const newProduct = new Product({ name, category, price, oldPrice: oldPrice || null, image });
+        const { name, category, salePrice, oldPrice, image } = req.body;
+        
+        const newProduct = new Product({ 
+            name, 
+            category, 
+            salePrice, // Frontend ke sath matched field name
+            oldPrice: oldPrice || null, 
+            image 
+        });
+
         await newProduct.save();
         res.status(201).json({ message: 'Product added successfully!', product: newProduct });
     } catch (err) {

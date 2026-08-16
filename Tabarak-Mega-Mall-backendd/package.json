@@ -11,6 +11,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+<<<<<<< HEAD
+    "axios": "^1.19.0",
+=======
+>>>>>>> 9e45a410931e39129bb8801df9bc05f299f4240c
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
