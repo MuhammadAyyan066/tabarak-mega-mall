@@ -261,6 +261,7 @@ function checkoutWhatsApp() {
     window.open(`https://wa.me/923143492111?text=${encodeURIComponent(text)}`, '_blank');
 }
 
+// Category filter with auto-scroll feature
 function filterCategory(cat, event) {
     const buttons = document.querySelectorAll('.cat-btn');
     buttons.forEach(btn => {
@@ -273,9 +274,79 @@ function filterCategory(cat, event) {
     if (cat === 'all') {
         renderProducts(products);
     } else {
-        const filtered = products.items ? products.filter(p => p.category === cat) : products.filter(p => p.category === cat);
+        const filtered = products.filter(p => p.category === cat);
         renderProducts(filtered);
     }
+
+    // Auto scroll smoothly to the products grid section
+    const gridSection = document.getElementById('productGrid');
+    if (gridSection) {
+        gridSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Updated renderProducts with "No Product Found" message handling
+function renderProducts(items) {
+    const grid = document.getElementById('productGrid');
+    if (!grid) return;
+
+    if (!items || items.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 text-slate-400 rounded-full text-2xl mb-4">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-lg mb-1">No products found</h3>
+                <p class="text-xs text-slate-500">Try searching for something else or pick another category.</p>
+            </div>
+        `;
+        const countEl = document.getElementById('totalProductsCount');
+        if (countEl) countEl.innerText = 0;
+        return;
+    }
+
+    grid.innerHTML = items.map(p => {
+        const imgSrc = p.image || p.img || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
+        const oldPriceHTML = (p.oldPrice && p.oldPrice > 0) ? `<span class="text-xs text-slate-400 line-through">Rs. ${p.oldPrice.toLocaleString()}</span>` : '';
+        
+        const isOutOfStock = p.stock !== undefined && p.stock <= 0;
+        const stockBadge = isOutOfStock 
+            ? `<span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-md uppercase">Out of Stock</span>`
+            : (p.stock <= 5 ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Only ${p.stock} left</span>` : `<span class="text-slate-400 text-[10px]">In Stock: ${p.stock}</span>`);
+
+        return `
+            <div class="product-card bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200 transition flex flex-col justify-between ${isOutOfStock ? 'opacity-75' : ''}">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-md uppercase">${p.category}</span>
+                        ${stockBadge}
+                    </div>
+                    <div class="overflow-hidden rounded-xl h-44 my-3 bg-slate-100">
+                        <img src="${imgSrc}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';">
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm line-clamp-1">${p.name}</h3>
+                    <p class="text-xs text-slate-500 mb-3">Guaranteed Fresh & Genuine</p>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-base font-black text-emerald-800">Rs. ${p.price ? p.price.toLocaleString() : 0}</span>
+                        ${oldPriceHTML}
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.stock})" ${isOutOfStock ? 'disabled class="bg-slate-200 text-slate-400 text-xs font-bold py-2 rounded-xl cursor-not-allowed"' : 'class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-xl transition"'}>
+                            ${isOutOfStock ? 'Sold Out' : '+ Add Cart'}
+                        </button>
+                        <a href="https://wa.me/923143492111?text=${encodeURIComponent('I want to order: ' + p.name)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl transition text-center flex items-center justify-center gap-1">
+                            <i class="fa-brands fa-whatsapp"></i> Quick
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    const countEl = document.getElementById('totalProductsCount');
+    if (countEl) countEl.innerText = items.length;
 }
 
 function filterProducts() {
@@ -283,11 +354,3 @@ function filterProducts() {
     const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
     renderProducts(filtered);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-    const checkoutForm = document.getElementById('checkoutForm');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', submitOnlineOrder);
-    }
-});
